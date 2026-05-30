@@ -1,0 +1,141 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.net.http.*, java.net.URI" %>
+<%@ page import="com.fasterxml.jackson.databind.*" %>
+<%@ page import="java.util.*" %>
+<%@ page import="model.entity.InternshipApplication" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Application Details</title>
+
+    <!-- Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
+    <style>
+        .card {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .container {
+            margin-top: 30px;
+        }
+        
+	        td {
+	        word-wrap: break-word;
+	        word-break: break-word;
+	        white-space: normal;
+	    }
+    </style>
+</head>
+<%
+    String apiUrl = "http://localhost:8080/api/company/1/applications";
+
+    List<InternshipApplication> applications = new ArrayList<>();
+
+    try {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse =
+                client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        applications = Arrays.asList(
+            mapper.readValue(httpResponse.body(), InternshipApplication[].class)
+        );
+
+    } catch (Exception e) {
+        out.println("Error: " + e.getMessage());
+    }
+%>
+<body>
+
+<div class="container">
+    <h4 class="center-align">Internship Applications</h4>
+
+    <table class="highlight centered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Status</th>
+                <th>Student</th>
+                <th>Student ID</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        <%
+            for (InternshipApplication app : applications) {
+
+                String status = app.getStatus();
+                String colorClass = "";
+
+                if ("ACCEPTED".equalsIgnoreCase(status)) {
+                    colorClass = "green";
+                } else if ("REJECTED".equalsIgnoreCase(status)) {
+                    colorClass = "red";
+                } else if ("PENDING".equalsIgnoreCase(status)) {
+                    colorClass = "orange";
+                }
+        %>
+            <tr>
+                <td><%= app.getId() %></td>
+
+                <td>
+                    <span class="new badge <%= colorClass %>" data-badge-caption="">
+                        <%= status %>
+                    </span>
+                </td>
+
+                <td><%= app.getStudentName() %></td>
+                <td><%= app.getStudentId() %></td>
+                <td><%= app.getInternshipDescription() %></td>
+
+                <td>
+                    <button class="btn blue"
+                        onclick="reviewApplication('<%= app.getId() %>')">
+                        Edit
+                    </button>
+                    <%
+                    	if("ACCEPTED".equals(status)){
+                	%>
+                		 <button class="btn blue"
+                        onclick="reviewApplication('<%= app.getId() %>')">
+                        Review
+                    </button>
+                    <%
+                    	}
+                    %>
+                </td>
+            </tr>
+        <%
+            }
+        %>
+        </tbody>
+    </table>
+</div>
+
+<!-- Materialize JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+<script>
+    function reviewApplication(id) {
+        window.location.href = "reviewApplication.jsp?id=" + id;
+    }
+</script>
+
+</body>

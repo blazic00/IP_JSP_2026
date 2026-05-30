@@ -1,0 +1,9 @@
+INDEX VERSION 1.4+C:\Users\User\Internet programiranje\IP_PROJEKAT_NOVI\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+162461060.index
+3541498179.index
+629734590.index
+1609757040.index
+3777298267.index
+3144081063.index
+1611013803.index
+4032034656.index

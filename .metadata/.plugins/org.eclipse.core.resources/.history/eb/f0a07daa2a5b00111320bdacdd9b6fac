@@ -1,0 +1,210 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="model.entity.Company" %>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Company Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+    .container { margin-top: 30px; }
+    .card { transition: transform 0.3s ease-in-out; }
+    .card:hover { transform: translateY(-5px); }
+    .btn { margin-top: 5px; }
+    table th, table td { font-size: 0.9rem; }
+    
+
+    /* FIXED ALIGNMENT */
+    table th:nth-child(3),
+    table th:nth-child(4),
+    table td:nth-child(3),
+    table td:nth-child(4) {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .material-icons {
+        vertical-align: middle;
+        line-height: 1;
+    }
+    table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* Allow wrapping everywhere */
+td, th {
+    word-break: break-word;
+}
+
+.table-wrapper {
+    max-height: 400px;   /* adjust as needed */
+    overflow-y: auto;
+}
+
+/* Control column widths */
+th:nth-child(1), td:nth-child(1) { width: 30%; } /* Name */
+th:nth-child(2), td:nth-child(2) { width: 30%; } /* Username */
+th:nth-child(3), td:nth-child(3) { width: 20%; text-align:center; }
+th:nth-child(4), td:nth-child(4) { width: 20%; text-align:center; }
+</style>
+
+</head>
+<body>
+
+<%
+List<Company> companies = (List<Company>) request.getAttribute("companies");
+Company company = (Company) request.getAttribute("company");
+%>
+
+<div class="container">
+<!-- BACK BUTTON -->
+    <div class="row">
+        <div class="col s12">
+            <a href="main"
+               class="btn grey darken-2 waves-effect waves-light">
+                ←
+            </a>
+        </div>
+    </div>
+    
+<!-- CREATE / UPDATE FORM -->
+<div class="row">
+    <div class="col s12">
+        <div class="card hoverable">
+            <div class="card-content">
+                <span class="card-title">
+                    <%= (company != null) ? "Edit Company" : "Create Company" %>
+                </span>
+
+                <form action="companies" method="post" id="companyForm">
+
+                    <% if (company != null) { %>
+                        <input type="hidden" name="id" value="<%= company.getId() %>">
+                    <% } %>
+
+                    <div class="input-field">
+                        <input id="name" name="name" type="text" required
+                               value="<%= company != null ? company.getName() : "" %>">
+                        <label class="active">Name</label>
+                    </div>
+
+                    <div class="input-field">
+                        <input id="username" name="username" type="text" required
+                               value="<%= company != null ? company.getUsername() : "" %>">
+                        <label class="active">Username</label>
+                    </div>
+
+                    <div class="input-field">
+                        <input id="password" name="password" type="password" required>
+                        <label class="active">Password</label>
+                    </div>
+
+                    <button type="submit" class="btn green waves-effect waves-light">
+                        Save
+                    </button>
+                    <a href="companies" class="btn grey waves-effect waves-light">
+                        Clear
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABLE -->
+<div class="row">
+    <div class="col s12">
+        <div class="card hoverable">
+            <div class="card-content">
+                <span class="card-title">Existing Companies</span>
+
+			<div class="table-wrapper">
+               <table class="highlight">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Active</th>
+                        <th>Actions</th> <!-- FIXED -->
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <% if (companies != null) {
+                           for (Company i : companies) { %>
+                        <tr>
+                            <td><%= i.getName() %></td>
+                            <td><%= i.getUsername() %></td>
+
+                            <!-- ACTIVE ICON -->
+                            <td>
+                                <a href="companies?toggle=<%= i.getId() %>"
+                                   title="<%= i.isActive() ? "Deactivate" : "Activate" %>"
+                                   style="display:inline-flex; align-items:center; justify-content:center;">
+                                    <% if (i.isActive()) { %>
+                                        <i class="material-icons green-text">check</i>
+                                    <% } else { %>
+                                        <i class="material-icons red-text">close</i>
+                                    <% } %>
+                                </a>
+                            </td>
+
+                            <!-- EDIT BUTTON -->
+                            <td>
+                                <a href="companies?edit=<%= i.getId() %>"
+                                   class="btn-small blue waves-effect"> <i class="material-icons">edit</i></a>
+                            </td>
+                        </tr>
+                    <%   }
+                       } %>
+
+                    </tbody>
+                </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+<script>
+    M.AutoInit();
+
+    async function hash(string) {
+        const utf8 = new TextEncoder().encode(string);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    document.getElementById("companyForm")
+    .addEventListener("submit", async function(e) {
+
+    e.preventDefault(); // IMPORTANT
+
+    const passwordInput = document.getElementById("password");
+
+    const password = passwordInput.value;
+
+    const passwordHash = await hash(password);
+
+    passwordInput.value = passwordHash;
+
+    // submit AFTER hashing finishes
+    this.submit();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+<%@page import="model.entity.InternshipApplication"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.net.http.*, java.net.URI" %>
+<%@ page import="com.fasterxml.jackson.databind.*" %>
+<%@ page import="java.util.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Application Details</title>
+
+    <!-- Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
+    <style>
+        .card {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<%
+	String id = request.getParameter("id");
+	String apiUrl = "http://localhost:8080/api/company/1/internshipApplications/" + id;
+	
+	InternshipApplication internshipApplication = new InternshipApplication();
+
+    try {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse =
+                client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        internshipApplication = mapper.readValue(httpResponse.body(), InternshipApplication.class);
+       
+
+    } catch (Exception e) {
+        out.println("Error: " + e.getMessage());
+    }
+	
+%>
+<body>
+
+<div class="container">
+    <div class="row">
+
+        <div class="col s12 m8 offset-m2">
+            <div class="card hoverable">
+                
+                <div class="card-content">
+                    <span class="card-title">internshipApplication Details</span>
+
+                    <p><strong>ID:</strong> <%= internshipApplication.getId() %></p>
+                    <p><strong>Status:</strong> <%= internshipApplication.getStatus() %></p>
+                    <p><strong>Student Name:</strong> <%= internshipApplication.getStudentName() %></p>
+                    <p><strong>Student ID:</strong> <%= internshipApplication.getStudentId() %></p>
+                    <p><strong>Internship ID:</strong> <%= internshipApplication.getInternshipId() %></p>
+
+                    <p><strong>Description:</strong></p>
+                    <p><%= internshipApplication.getInternshipDescription() %></p>
+
+                    <p>
+                        <strong>CV:</strong><br>
+                        <a href="<%= internshipApplication.getStudentCV() %>" target="_blank" 
+                           class="btn waves-effect waves-light">
+                           View CV
+                        </a>
+                    </p>
+                </div>
+
+                <div class="card-action">
+                    <a href="internshipApplications.jsp" class="btn grey">Back</a>
+
+                    <a href="#" class="btn green">Approve</a>
+                    <a href="#" class="btn red">Reject</a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

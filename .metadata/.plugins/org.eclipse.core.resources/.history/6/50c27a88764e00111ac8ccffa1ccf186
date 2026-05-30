@@ -1,0 +1,323 @@
+<%@page import="java.net.http.HttpClient"%> 
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.net.http.*, java.net.URI" %>
+<%@ page import="com.fasterxml.jackson.databind.*" %>
+<%@ page import="java.util.*" %>
+<%@ page import="model.*" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Student Evaluation</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Materialize CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
+<style>
+
+    .container {
+        margin-top: 20px;
+    }
+
+    .card {
+        transition: transform 0.3s ease-in-out;
+        border-radius: 12px;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .worklog-container {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .worklog-item {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 12px 0;
+    }
+
+    .worklog-item:last-child {
+        border-bottom: none;
+    }
+
+    .title {
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .week {
+        color: gray;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    textarea {
+        min-height: 140px;
+    }
+
+    .save-btn {
+        margin-top: 10px;
+    }
+
+    /* MOBILE */
+    @media only screen and (max-width: 600px) {
+
+        .container {
+            width: 95%;
+        }
+
+        h4 {
+            font-size: 1.7rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem !important;
+        }
+
+        .title {
+            font-size: 15px;
+        }
+
+        .week {
+            font-size: 12px;
+        }
+
+        .worklog-item p {
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            min-height: 120px;
+            font-size: 0.95rem;
+        }
+
+        .btn {
+            width: 100%;
+            font-size: 0.85rem;
+        }
+
+        .worklog-container {
+            max-height: 350px;
+            padding-right: 0;
+        }
+    }
+
+</style>
+
+</head>
+
+<%
+    String studentInternshipId = request.getParameter("studentInternshipId");
+
+    String apiUrl = "http://localhost:8080/api/student-internship/%s"
+            .formatted(studentInternshipId);
+
+    InternshipStudentEvaluation studentInternship = new InternshipStudentEvaluation();
+
+    try {
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse =
+                client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+
+        studentInternship =
+                mapper.readValue(httpResponse.body(),
+                InternshipStudentEvaluation.class);
+
+        List<WorkLog> workLogs = studentInternship.getWorkLogList();
+
+        // sort newest first
+        workLogs.sort(Comparator.comparing(
+            WorkLog::getWeek,
+            Comparator.nullsLast(Comparator.naturalOrder())
+        ).reversed());
+
+        studentInternship.setWorkLogList(workLogs);
+
+    } catch (Exception e) {
+        // out.println("Error: " + e.getMessage());
+    }
+%>
+
+<body>
+
+<div class="container">
+
+        <div style="margin-bottom: 15px;">
+    <a href="main"
+       class="btn-floating grey darken-2 waves-effect waves-light">
+        <i class="material-icons">arrow_back</i>
+    </a>
+</div>
+
+    <!-- PAGE TITLE -->
+    <h4 class="center-align">Student Internship Review</h4>
+
+    <!-- WORKLOG CARD -->
+    <div class="card hoverable">
+
+        <div class="card-content">
+
+            <span class="card-title">
+                Work Logs
+            </span>
+
+            <div class="worklog-container">
+
+                <%
+                    if (studentInternship.getWorkLogList() != null &&
+                        !studentInternship.getWorkLogList().isEmpty()) {
+
+                        for (WorkLog log : studentInternship.getWorkLogList()) {
+                %>
+
+                    <div class="worklog-item">
+
+                        <div class="title">
+                            <%= log.getTitle() %>
+                        </div>
+
+                        <div class="week">
+                            Week: <%= log.getWeek() %>
+                        </div>
+
+                        <p>
+                            <%= log.getDescription() %>
+                        </p>
+
+                    </div>
+
+                <%
+                        }
+                    } else {
+                %>
+
+                    <p>No work logs found.</p>
+
+                <%
+                    }
+                %>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- EVALUATION CARD -->
+    <div class="card hoverable">
+
+        <div class="card-content">
+
+            <span class="card-title">
+                Evaluation Comment
+            </span>
+
+            <form onsubmit="onSaveEvaluation(event, this)">
+
+                <div class="input-field">
+
+                    <textarea
+                        name="comment"
+                        class="materialize-textarea"
+                        placeholder="Enter your evaluation..."><%= 
+                            studentInternship.getCompanyEvaluation() != null
+                            ? studentInternship.getCompanyEvaluation()
+                            : ""
+                        %></textarea>
+
+                </div>
+
+                <input
+                    type="hidden"
+                    name="studentInternshipId"
+                    value="<%= studentInternshipId %>"/>
+
+                <div class="center-align">
+
+                    <button
+                        type="submit"
+                        class="btn green waves-effect waves-light save-btn">
+
+                        Save Evaluation
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Materialize JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+<script>
+
+function onSaveEvaluation(event, form) {
+
+    event.preventDefault();
+
+    const formData = new FormData(form);
+
+    const studentInternshipId =
+        formData.get("studentInternshipId");
+
+    const url =
+        "http://localhost:8080/api/student-internship/" +
+        studentInternshipId;
+
+    fetch(url, {
+        method: "PUT",
+        body: formData.get("comment")
+    })
+
+    .then(response => {
+
+        if (response.ok) {
+
+            window.location.href =
+                "reviewStudentInternship.jsp?studentInternshipId=" +
+                encodeURIComponent(studentInternshipId);
+
+        } else {
+
+            alert("Error saving evaluation");
+
+        }
+
+    })
+
+    .catch(err => {
+
+        console.error(err);
+
+        alert("Request failed");
+
+    });
+}
+
+</script>
+
+</body>
+</html>

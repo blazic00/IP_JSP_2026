@@ -1,0 +1,96 @@
+<%@page import="java.net.http.HttpClient"%> 
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.net.http.*, java.net.URI" %>
+<%@ page import="com.fasterxml.jackson.databind.*" %>
+<%@ page import="java.util.*" %>
+<%@ page import="model.*" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Student Evaluation</title>
+
+<style>
+    body { font-family: Arial; margin: 20px; }
+    .worklog { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    .title { font-weight: bold; font-size: 18px; }
+    .week { color: gray; font-size: 14px; }
+    textarea { width: 100%; height: 100px; margin-top: 20px; }
+</style>
+
+</head>
+
+<%
+    String studentId = request.getParameter("studentId");
+    String internshipId = request.getParameter("internshipId");
+
+    String apiUrl = "http://localhost:8080/api/student/%s/worklogs?internshipId=%s"
+            .formatted(studentId, internshipId);
+
+    InternshipStudentEvaluation studentInternship = new InternshipStudentEvaluation();
+
+    try {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse =
+                client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+
+        List<WorkLog> workLogs = Arrays.asList(
+                mapper.readValue(httpResponse.body(), WorkLog[].class)
+        );
+
+        studentInternship.setWorklogs(workLogs);
+
+    } catch (Exception e) {
+        out.println("Error: " + e.getMessage());
+    }
+%>
+
+<body>
+
+<h1>Review Student Internship</h1>
+<h2>Work Logs</h2>
+
+<%
+    if (studentInternship.getWorklogs() != null && !studentInternship.getWorklogs().isEmpty()) {
+        for (WorkLog log : studentInternship.getWorklogs()) {
+%>
+            <div class="worklog">
+                <div class="title"><%= log.getTitle() %></div>
+                <div class="week">Week: <%= log.getWeek() %></div>
+                <p><%= log.getDescription() %></p>
+            </div>
+<%
+        }
+    } else {
+%>
+        <p>No work logs found.</p>
+<%
+    }
+%>
+
+<h3>Evaluation Comment</h3>
+
+<form method="post" action="saveEvaluation">
+    <textarea name="comment" placeholder="Enter your evaluation..."><%= 
+        studentInternship.getComment() != null ? studentInternship.getComment() : "" 
+    %></textarea>
+
+    <br><br>
+    <input type="hidden" name="studentId" value="<%= studentId %>"/>
+    <input type="hidden" name="internshipId" value="<%= internshipId %>"/>
+
+    <button type="submit">Save Evaluation</button>
+</form>
+
+</body>
+</html>

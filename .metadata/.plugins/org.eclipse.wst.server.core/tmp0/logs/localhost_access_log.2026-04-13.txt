@@ -1,0 +1,15 @@
+127.0.0.1 - - [13/Apr/2026:19:56:03 +0200] "GET / HTTP/1.1" 404 752
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:56:58 +0200] "GET /favicon.ico HTTP/1.1" 404 763
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:57:13 +0200] "GET /company-app/onSaveEvaluation(event,%20this)?comment=dsa&studentId=1&internshipId=5 HTTP/1.1" 404 799
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:57:23 +0200] "GET /company-app/ HTTP/1.1" 200 2539
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:57:24 +0200] "GET /company-app/css/style.css HTTP/1.1" 404 785
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:57:36 +0200] "POST /company-app/login HTTP/1.1" 302 -
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:57:36 +0200] "GET /company-app/main HTTP/1.1" 200 2860
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:58:00 +0200] "GET /company-app/evaluateStudent.jsp HTTP/1.1" 200 138
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:58:05 +0200] "GET /company-app/applications.jsp HTTP/1.1" 200 5715
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:58:10 +0200] "GET /company-app/reviewStudentInternship.jsp?internshipId=5&studentId=1 HTTP/1.1" 200 8049
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:19:59:32 +0200] "GET /company-app/onSaveEvaluation(event,%20this)?comment=Nice+work%21&studentId=1&internshipId=5 HTTP/1.1" 404 799
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:21:20:34 +0200] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 808
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:21:20:43 +0200] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 808
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:21:20:46 +0200] "GET /company-app/onSaveEvaluation(event,%20this)?comment=Nice+work%21&studentId=1&internshipId=5 HTTP/1.1" 404 799
+0:0:0:0:0:0:0:1 - - [13/Apr/2026:21:20:46 +0200] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 808

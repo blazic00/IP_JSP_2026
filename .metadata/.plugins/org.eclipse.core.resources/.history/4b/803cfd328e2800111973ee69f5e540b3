@@ -1,0 +1,44 @@
+<%@page import="model.entity.InternshipApplication"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.net.http.*, java.net.URI" %>
+<%@ page import="com.fasterxml.jackson.databind.*" %>
+<%@ page import="java.util.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<%
+	String id = request.getParameter("id");
+	String apiUrl = "http://localhost:8080/api/company/1/applications/" + id;
+	
+	InternshipApplication application = new InternshipApplication();
+
+    try {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse =
+                client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        applications = Arrays.asList(
+            mapper.readValue(httpResponse.body(), InternshipApplication[].class)
+        );
+
+    } catch (Exception e) {
+        out.println("Error: " + e.getMessage());
+    }
+	
+%>
+<body>
+	Hello
+</body>
+</html>

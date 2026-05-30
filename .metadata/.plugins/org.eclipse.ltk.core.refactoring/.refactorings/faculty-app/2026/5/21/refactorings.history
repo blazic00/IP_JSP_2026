@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move &apos;AuthFilter.java&apos; to &apos;filter&apos;" description="Move &apos;AuthFilter.java&apos; to &apos;filter&apos;" destination="src/main/java/filter" element1="src/main/java/servlet/AuthFilter.java" flags="7" id="org.eclipse.ltk.core.refactoring.move.resources" resources="1" stamp="1779127121305" updateReferences="true"/>
+</session>

@@ -1,0 +1,168 @@
+<%@page import="java.net.http.HttpClient"%> 
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.net.http.*, java.net.URI" %>
+<%@ page import="com.fasterxml.jackson.databind.*" %>
+<%@ page import="java.util.*" %>
+<%@ page import="model.*" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Student Evaluation</title>
+
+<!-- Materialize CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
+<style>
+    .container {
+        margin-top: 30px;
+    }
+
+    .card {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .worklog-container {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .worklog-item {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 10px 0;
+    }
+
+    .worklog-item:last-child {
+        border-bottom: none;
+    }
+
+    .title {
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .week {
+        color: gray;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    textarea {
+        min-height: 120px;
+    }
+</style>
+
+</head>
+
+<%
+    String studentId = request.getParameter("studentId");
+    String internshipId = request.getParameter("internshipId");
+
+    String apiUrl = "http://localhost:8080/api/student/%s/worklogs?internshipId=%s"
+            .formatted(studentId, internshipId);
+
+    InternshipStudentEvaluation studentInternship = new InternshipStudentEvaluation();
+
+    try {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse =
+                client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+
+        List<WorkLog> workLogs = Arrays.asList(
+                mapper.readValue(httpResponse.body(), WorkLog[].class)
+        );
+
+        // ✅ sort by week (newest first)
+        workLogs.sort(Comparator.comparing(
+            WorkLog::getWeek,
+            Comparator.nullsLast(Comparator.naturalOrder())
+        ).reversed());
+
+        studentInternship.setWorklogs(workLogs);
+
+    } catch (Exception e) {
+        out.println("Error: " + e.getMessage());
+    }
+%>
+
+<body>
+
+<div class="container">
+
+    <h4 class="center-align">Student Internship Review</h4>
+
+    <!-- Worklogs Card -->
+    <div class="card">
+        <div class="card-content">
+            <span class="card-title">Work Logs</span>
+
+            <div class="worklog-container">
+                <%
+                    if (studentInternship.getWorklogs() != null && !studentInternship.getWorklogs().isEmpty()) {
+                        for (WorkLog log : studentInternship.getWorklogs()) {
+                %>
+                    <div class="worklog-item">
+                        <div class="title"><%= log.getTitle() %></div>
+                        <div class="week">Week: <%= log.getWeek() %></div>
+                        <p><%= log.getDescription() %></p>
+                    </div>
+                <%
+                        }
+                    } else {
+                %>
+                    <p>No work logs found.</p>
+                <%
+                    }
+                %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Card -->
+    <div class="card">
+        <div class="card-content">
+            <span class="card-title">Evaluation Comment</span>
+
+            <form method="post" action="onSaveEvaluation()">
+                <div class="input-field">
+                    <textarea name="comment" class="materialize-textarea"
+                        placeholder="Enter your evaluation..."><%= 
+                        studentInternship.getComment() != null ? studentInternship.getComment() : "" 
+                    %></textarea>
+                </div>
+
+                <input type="hidden" name="studentId" value="<%= studentId %>"/>
+                <input type="hidden" name="internshipId" value="<%= internshipId %>"/>
+
+                <div class="center-align">
+                    <button type="submit" class="btn green">
+                        Save Evaluation
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Materialize JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+</body>
+</html>

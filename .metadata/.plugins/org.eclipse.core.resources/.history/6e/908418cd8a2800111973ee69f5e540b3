@@ -1,0 +1,67 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.net.http.*, java.net.URI" %>
+<%@ page import="com.fasterxml.jackson.databind.*" %>
+<%@ page import="java.util.*" %>
+<%@ page import="model.entity.InternshipApplication" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<%
+    String apiUrl = "http://localhost:8080/api/company/1/applications";
+
+    List<InternshipApplication> applications = new ArrayList<>();
+
+    try {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse =
+                client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        applications = Arrays.asList(
+            mapper.readValue(httpResponse.body(), InternshipApplication[].class)
+        );
+
+    } catch (Exception e) {
+        out.println("Error: " + e.getMessage());
+    }
+%>
+<body>
+	<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>status</th>
+        <th>studentId</th>
+    </tr>
+
+    <%
+        for (InternshipApplication app : applications) {
+    %>
+        <tr>
+            <td><%= app.getId() %></td>
+            <td><%= app.getStatus() %></td>
+            <td><%= app.getStudentName() %></td>
+            <td><%= app.getStudentId() %></td>
+            <td><%= app.getInternshipDescription() %>
+            <td><button>EDIT</button></td>
+        </tr>
+    <%
+        }
+    %>
+</table>
+</body>
+<script>
+	//fetch("http://localhost:8080/api/company/1/applications")
+</script>
+</html>

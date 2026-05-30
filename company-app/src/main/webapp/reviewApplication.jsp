@@ -1,0 +1,303 @@
+<%@page import="model.entity.InternshipApplication"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.net.http.*, java.net.URI" %>
+<%@ page import="com.fasterxml.jackson.databind.*" %>
+<%@ page import="java.util.*" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+    <title>Application Details</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
+    <style>
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .card {
+            transition: transform 0.3s ease-in-out;
+            border-radius: 12px;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-content p {
+            margin-bottom: 18px;
+            word-break: break-word;
+        }
+
+        .status-chip {
+            margin-top: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .download-btn {
+            margin-top: 8px;
+        }
+
+        /* MOBILE */
+        @media only screen and (max-width: 600px) {
+
+            .container {
+                width: 95%;
+            }
+
+            .card-title {
+                font-size: 1.5rem !important;
+                line-height: 1.4;
+            }
+
+            .card-content p {
+                font-size: 0.95rem;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 8px;
+                font-size: 0.85rem;
+            }
+
+            .card-action {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .chip {
+                font-size: 0.8rem;
+            }
+        }
+
+    </style>
+</head>
+
+<%
+
+    String id = request.getParameter("id");
+
+    String apiUrl =
+        "http://localhost:8080/api/applications/" + id;
+
+    String action =
+        request.getParameter("action");
+
+    String status =
+        action != null
+        ? (action.equals("approve")
+            ? "ACCEPTED"
+            : "REJECTED")
+        : null;
+
+    if (request.getParameter("action") != null) {
+
+        try {
+
+            HttpClient client =
+                HttpClient.newHttpClient();
+
+            HttpRequest httpRequest =
+                HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(
+                        "{\"approve\":\"" + status + "\"}"
+                    ))
+                    .build();
+
+            HttpResponse<String> httpResponse =
+                client.send(
+                    httpRequest,
+                    HttpResponse.BodyHandlers.ofString()
+                );
+
+        } catch (Exception e) {
+
+            out.println("Error: " + e.getMessage());
+
+        }
+    }
+
+    InternshipApplication internshipApplication =
+        new InternshipApplication();
+
+    try {
+
+        HttpClient client =
+            HttpClient.newHttpClient();
+
+        HttpRequest httpRequest =
+            HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse =
+            client.send(
+                httpRequest,
+                HttpResponse.BodyHandlers.ofString()
+            );
+
+        ObjectMapper mapper =
+            new ObjectMapper();
+
+        internshipApplication =
+            mapper.readValue(
+                httpResponse.body(),
+                InternshipApplication.class
+            );
+
+    } catch (Exception e) {
+
+        out.println("Error: " + e.getMessage());
+
+    }
+
+%>
+
+<body>
+
+<div class="container">
+
+    <!-- BACK BUTTON -->
+    <div style="margin-bottom: 15px;">
+
+        <a href="applications.jsp"
+           class="btn grey darken-2 waves-effect waves-light"
+           style="display:inline-block;width:auto;padding:0 16px;">
+
+            ←
+
+        </a>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col s12 m10 offset-m1 l8 offset-l2">
+
+            <div class="card hoverable">
+
+                <div class="card-content">
+
+                    <span class="card-title">
+                        Internship Application Details
+                    </span>
+
+                    <!-- STATUS -->
+                    <p>
+
+                        <strong>Status:</strong>
+
+                        <br>
+
+                        <div class="chip status-chip
+                            <%= "ACCEPTED".equals(internshipApplication.getStatus())
+                                ? "green white-text"
+                                : "REJECTED".equals(internshipApplication.getStatus())
+                                    ? "red white-text"
+                                    : "orange white-text"
+                            %>">
+
+                            <%= internshipApplication.getStatus() %>
+
+                        </div>
+
+                    </p>
+
+                    <!-- STUDENT -->
+                    <p>
+
+                        <strong>Student Name:</strong>
+
+                        <br>
+
+                        <%= internshipApplication.getStudentName() %>
+
+                    </p>
+
+                    <!-- DESCRIPTION -->
+                    <p>
+
+                        <strong>Description:</strong>
+
+                        <br><br>
+
+                        <%= internshipApplication.getInternshipDescription() %>
+
+                    </p>
+
+                    <!-- CV -->
+                    <p>
+
+                        <strong>CV:</strong>
+
+                        <br>
+
+                        <a href="http://localhost:8080/api/student/1/cv-download"
+                           download
+                           class="btn blue waves-effect waves-light download-btn">
+
+                            Download CV
+
+                        </a>
+
+                    </p>
+
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="card-action">
+
+                    <div class="action-buttons">
+
+                        <a href="reviewApplication.jsp?id=<%=id %>&action=approve"
+                           class="btn green waves-effect waves-light">
+
+                            Approve
+
+                        </a>
+
+                        <a href="reviewApplication.jsp?id=<%=id %>&action=reject"
+                           class="btn red waves-effect waves-light">
+
+                            Reject
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Materialize JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+</body>
+</html>

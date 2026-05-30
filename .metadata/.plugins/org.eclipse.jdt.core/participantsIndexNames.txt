@@ -1,0 +1,13 @@
+INDEX VERSION 1.134
+C:\Users\User\Internet programiranje\IP_PROJEKAT_NOVI\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\4032034656.index
+\faculty-app\src\main\java
+C:\Users\User\Internet programiranje\IP_PROJEKAT_NOVI\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2300361628.index
+\company-app\src\main\resources
+C:\Users\User\Internet programiranje\IP_PROJEKAT_NOVI\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2553630615.index
+\company-app\src\main\resources
+C:\Users\User\Internet programiranje\IP_PROJEKAT_NOVI\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\3149909810.index
+\company-app\src\main\java
+C:\Users\User\Internet programiranje\IP_PROJEKAT_NOVI\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\534643569.index
+\company-app\src\main\java
+C:\Users\User\Internet programiranje\IP_PROJEKAT_NOVI\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\1885678257.index
+\faculty-app\src\main\java

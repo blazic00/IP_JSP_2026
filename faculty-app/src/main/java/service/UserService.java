@@ -1,0 +1,33 @@
+package service;
+
+import model.entity.User;
+import repository.UserRepository;
+
+public class UserService {
+	
+
+	private UserRepository userRepository = new UserRepository();
+
+	public User isLoginValid(String username, String password) {
+	 try {
+           User user = userRepository.findByUsernameAndPassword(username, password);
+           if(user == null) {
+        	   return null;
+           }
+           return user;
+        } 
+	 catch (Exception e) {
+		 	e.printStackTrace();
+            return null;
+        }
+	}
+
+	public void changePassword(User user, String newPassword) {
+		user.setPassword(newPassword);
+		userRepository.updateUser(user);
+	}
+
+
+
+
+}
